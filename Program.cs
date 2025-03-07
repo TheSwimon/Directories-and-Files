@@ -12,14 +12,22 @@ IEnumerable<string> salesTotals = Directory.EnumerateFiles(storeDirectory, "*sal
 string salesTotalDir = Path.Combine(storeDirectory, "SalesTotalDir");
 Directory.CreateDirectory(salesTotalDir);
 
-File.WriteAllText(Path.Combine(salesTotalDir, "totals.txt"), string.Empty);
-double sum = 0;
+SalesData salesData = new SalesData(CalculateSalesTotal(salesTotals));
+File.WriteAllText(Path.Combine(salesTotalDir, "totals.txt"), $"total: {Math.Round(salesData.Total,2)}");
 
-foreach (var file in salesTotals)
+
+
+double CalculateSalesTotal(IEnumerable<string> salesFiles)
 {
-    var salesJson = File.ReadAllText(file);
-    var salesData = JsonConvert.DeserializeObject<SalesTotal>(salesJson);
-    sum += salesData.OverallTotal;
+    double total = 0;
+
+    foreach (var file in salesFiles)
+    {
+        var salesJson = File.ReadAllText(file);
+        var salesData = JsonConvert.DeserializeObject<SalesTotal>(salesJson);
+        total += salesData.OverallTotal;
+    }
+    return total;
 }
 
-File.AppendAllText(Path.Combine(salesTotalDir, "totals.txt"), $"total: 200");
+record SalesData(double Total);
